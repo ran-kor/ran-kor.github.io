@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Number Compositor</title>
+  <title>아발론 나레이터</title>
   <!-- Bootstrap 5 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css">
 </head>
 <body>
   <div class="container">
-    <h1>Number Compositor</h1>
+    <h1>아발론 나레이터</h1>
     
     <div class="row">
       <div class="col-md-7">
         <label for="num_players">플레이어 수</label>
       </div>
       <div class="col-md-3">
-        <input type="number" class="form-control" id="num_players" required>
+        <input type="number" class="form-control" id="num_players" value=7 required>
       </div>
     </div>
     <div class="row">
@@ -24,7 +24,7 @@
         <label for="num_good">멀린팀 수</label>
       </div>
       <div class="col-md-3">
-        <input type="number" class="form-control" id="num_good" required>
+        <input type="number" class="form-control" id="num_good" value=3 required>
       </div>
     </div>
     <div class="row">
@@ -32,12 +32,20 @@
         <label for="num_evil">모드레드팀 수</label>
       </div>
       <div class="col-md-3">
-        <input type="number" class="form-control" id="num_evil" required>
+        <input type="number" class="form-control" id="num_evil" value=4 required>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-7">
+        <label for="num_evil">대기시간(초)</label>
+      </div>
+      <div class="col-md-3">
+        <input type="number" class="form-control" id="interval" value=5 required>
       </div>
     </div>
     <div class="row mt-3">
       <div class="col-md-12">
-        <label>Merlin Team</label><br>
+        <label>선팀</label><br>
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" id="has_merlin" value="멀린" checked>
           <label class="form-check-label" for="has_merlin">멀린</label>
@@ -62,7 +70,7 @@
     </div>
     <div class="row mt-3">
       <div class="col-md-12">
-        <label>Merlin Team</label><br>
+        <label>악팀</label><br>
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" id="has_mordred" value="모드레드" checked>
           <label class="form-check-label" for="has_mordred">모드레드</label>
@@ -86,23 +94,28 @@
       </div>
     </div>
 
+    <div class="row">
+      <div class="col-md-7">
+        <label for="num_loyal_servants">아충신 수</label>
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" id="num_loyal_servants" value="0" readonly>
+      </div>
+    </div>
+
+
+
     <div class="row mt-3">
       <div class="col-md-12">
-        <button class="btn btn-primary" id="composeBtn">Compose String</button>
+        <label for="composedString">멘트:</label>
+        <textarea class="form-control" id="composedString" readonly></textarea>
       </div>
     </div>
 
     <div class="row mt-3">
       <div class="col-md-12">
-        <label for="composedString">Composed String:</label>
-        <input type="text" class="form-control" id="composedString" readonly>
-      </div>
-    </div>
-
-    <div class="row mt-3">
-      <div class="col-md-12">
-        <button class="btn btn-primary" id="composeBtn">Compose String</button>
-        <button class="btn btn-danger" id="stopBtn">Stop</button>
+        <button class="btn btn-primary" id="composeBtn">시작</button>
+        <button class="btn btn-danger" id="stopBtn">정지</button>
       </div>
     </div>
 
@@ -112,6 +125,38 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
+
+    function getNumSpecials() {
+      var num_special_good = 0;
+      if (document.getElementById('has_merlin').checked) {
+        num_special_good += 1;
+      }
+      if (document.getElementById('has_percival').checked) {
+        num_special_good += 1;
+      }
+      if (document.getElementById('has_untrustworthy').checked) {
+        num_special_good += 1;
+      }
+      if (document.getElementById('has_cleric').checked) {
+        num_special_good += 1;
+      }
+      if (document.getElementById('has_troublemaker').checked) {
+        num_special_good += 1;
+      }
+      return num_special_good;
+    }
+
+    function updateNumLS() {
+      var num_special_good = getNumSpecials();
+      var num_good = parseInt(document.getElementById('num_good').value);
+      
+      var num_loyal_servants = num_good - num_special_good;
+      if (num_loyal_servants < 0) {
+        document.getElementById('num_loyal_servants').value = "특수역할이 너무 많아요!";
+      } else {
+        document.getElementById('num_loyal_servants').value = num_loyal_servants;
+      }
+    }
 
     function speakWithPause(text, lang, pauseInSeconds) {
       return new Promise(function(resolve, reject) {
@@ -154,16 +199,26 @@
       var has_oberon = document.getElementById('has_oberon').checked;
       var has_trickster = document.getElementById('has_trickster').checked;
 
-      var interval = 1;
+      var interval = document.getElementById('interval').value;
 
-      var down_string = "고개를 숙여주세요";
-      await speakWithPause(down_string, 'ko-KR', interval);
+      
+
 
 
       if (num_players != (num_good + num_evil)) {
         var msg = "플레이어 수 (" + num_players + ") 는 멀린팀 수 (" + num_good + ") 와 모드레드팀 수 (" + num_evil + ") 의 합과 같아야 합니다.";
         speakError(msg);
       }
+
+      var num_special_good = getNumSpecials();
+      if (num_good - num_special_good < 0) {
+        speakError("특수역할이 너무 많아요!");
+        return;
+      }
+      var down_string = "고개를 숙여주세요";
+      await speakWithPause(down_string, 'ko-KR', interval);
+
+  
 
       if (!has_merlin) {
         speakError("멀린이 없습니다");
@@ -245,39 +300,12 @@
       return;
 
 
-
-      
-
-      // var composedString1 = "첫 숫자는 " + num1 + ", the second number is " + num2 + ".";
-      // var composedString2 = "And the third number is " + num3 + ".";
-      
-      // document.getElementById('composedString').value = composedString1 + " " + composedString2;
-
-      // if ('speechSynthesis' in window) {
-      //   var synthesis = window.speechSynthesis;
-      //   var utterance1 = new SpeechSynthesisUtterance(composedString1);
-      //   var utterance2 = new SpeechSynthesisUtterance(composedString2);
-        
-      //   // Specify Korean language and voice
-      //   utterance1.lang = 'ko-KR'; // Language code for English
-      //   utterance2.lang = 'ko-KR'; // Language code for English
-        
-      //   synthesis.speak(utterance1);
-
-      //   utterance1.onend = function() {
-      //     // Insert a 3-second pause between utterances
-      //     setTimeout(function() {
-      //       synthesis.speak(utterance2);
-      //     }, 3000);
-      //   };
-
-      //   document.getElementById('supportText').textContent = "Speech synthesis is supported.";
-      // } else {
-      //   document.getElementById('supportText').textContent = "Speech synthesis is not supported in your browser.";
-      //   console.error('Speech synthesis is not supported in your browser.');
-      // }
     };
-
+    document.getElementById('num_good').addEventListener('input', updateNumLS);
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(checkbox) {
+      checkbox.addEventListener('change', updateNumLS);
+    });
     document.getElementById('composeBtn').addEventListener('click', speakSentences);
     document.getElementById('stopBtn').addEventListener('click', function() {
       var synthesis = window.speechSynthesis;
