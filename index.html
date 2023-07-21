@@ -12,6 +12,13 @@
     <h1>아발론 나레이터</h1>
     
     <div class="row">
+      
+      <div class="row">
+        <div class="col-md-7">
+          <input type="text" class="form-control" id="support-speech" readonly></input>
+        </div>
+      </div>
+
       <div class="col-md-7">
         <label for="num_players">플레이어 수</label>
       </div>
@@ -115,11 +122,7 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-7">
-        <label id="support-speech"></label>
-      </div>
-    </div>
+    
 
 
 
@@ -234,11 +237,11 @@
     function checkIfSpeechSupported() {
       if ('speechSynthesis' in window) {
         // Speech Synthesis supported 🎉
-        document.getElementById('support-speech').innerHTML = '음성 지원됨';
+        document.getElementById('support-speech').value = '음성 지원됨 ✅︎';
         return true;
       } else {
         // Speech Synthesis Not Supported 😣
-        document.getElementById('support-speech').innerHTML = '음성 지원안됨';
+        document.getElementById('support-speech').value = '음성 지원안됨 ❌';
         return false;
       }
     }
