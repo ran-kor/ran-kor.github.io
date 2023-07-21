@@ -404,8 +404,8 @@
       await speakWithPause(begin_string, 'ko-KR', 2);
       await speakWithPause("셋", 'ko-KR', 0.5);
 
-      if(isNarrating == false) {
-        document.getElementById('composedString').value = "정지됨";
+      if(stopRequested == true) {
+        document.getElementById('composedString').value = "정지완료";
       }
       stopRequested = false;
       return;
@@ -430,7 +430,6 @@
       utterances.forEach(function(utterance) {
         synthesis.cancel(); // Stop all scheduled utterances
       });
-      isNarrating = false;
       stopRequested = true;
       document.getElementById('composedString').value = "정지 요청됨";
     });
