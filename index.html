@@ -104,11 +104,20 @@
     </div>
 
     <div class="row">
+      <div class="col-md-7">
+        <label for="mute">음소거</label>
+      </div>
       <div class="col-md-3">
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" id="mute" value="음소거">
-          <label class="form-check-label" for="has_mordred">음소거</label>
+          <!-- <label class="form-check-label" for="has_mordred">음소거</label> -->
         </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-7">
+        <label id="support-speech"></label>
       </div>
     </div>
 
@@ -188,23 +197,32 @@
     }
 
     let utterances = [];
+    let isNarrating = false;
 
     function speakWithPause(text, lang, pauseInSeconds) {
       return new Promise(function(resolve, reject) {
+        if (!isNarrating) {
+          resolve();
+        }
         document.getElementById('composedString').value = text;
         var muted = document.getElementById('mute').checked;
-        if ('speechSynthesis' in window && !muted) {
+        if ('speechSynthesis' in window) {
           var synthesis = window.speechSynthesis;
           utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = lang;
           
-          synthesis.speak(utterance);
-
-          utterance.onend = function() {
+          if (!muted) {
+            synthesis.speak(utterance);
+            utterance.onend = function() {
+              setTimeout(resolve, pauseInSeconds * 1000);
+            };
+          } else {
             setTimeout(resolve, pauseInSeconds * 1000);
-          };
+          }
         } else {
-          reject('Speech synthesis is not supported in your browser.');
+
+          resolve();
+          // reject('Speech synthesis is not supported in your browser.');
         }
       });
     }
@@ -213,6 +231,17 @@
       await speakWithPause(text, 'ko-KR', 0.5)
     }
     
+    function checkIfSpeechSupported() {
+      if ('speechSynthesis' in window) {
+        // Speech Synthesis supported 🎉
+        document.getElementById('support-speech').innerHTML = '음성 지원됨';
+        return true;
+      } else {
+        // Speech Synthesis Not Supported 😣
+        document.getElementById('support-speech').innerHTML = '음성 지원안됨';
+        return false;
+      }
+    }
     
     async function speakSentences() {
       var num_players = parseInt(document.getElementById('num_players').value);
@@ -232,10 +261,6 @@
       var has_trickster = document.getElementById('has_trickster').checked;
 
       var interval = document.getElementById('interval').value;
-
-      
-
-
 
       if (num_players != (num_good + num_evil)) {
         var msg = "플레이어 수 (" + num_players + ") 는 멀린팀 수 (" + num_good + ") 와 모드레드팀 수 (" + num_evil + ") 의 합과 같아야 합니다.";
@@ -343,17 +368,25 @@
 
 
     };
+    document.addEventListener('DOMContentLoaded', checkIfSpeechSupported);
     document.getElementById('num_good').addEventListener('input', updateNumLS);
     var checkboxes = document.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach(function(checkbox) {
       checkbox.addEventListener('change', updateNumLS);
     });
-    document.getElementById('composeBtn').addEventListener('click', speakSentences);
+    document.getElementById('composeBtn').addEventListener('click', async function() {
+    if (!isNarrating) {
+      isNarrating = true; // Set narration state to true before starting narration
+      await speakSentences();
+      isNarrating = false; // Set narration state back to false after narration is done
+    }
+    });
     document.getElementById('stopBtn').addEventListener('click', function() {
       var synthesis = window.speechSynthesis;
       utterances.forEach(function(utterance) {
         synthesis.cancel(); // Stop all scheduled utterances
       });
+      isNarrating = false;
       document.getElementById('composedString').value = "정지";
     });
   </script>
