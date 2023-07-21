@@ -204,8 +204,12 @@
       }
       if (has_oberon) {
         merlin_string += ", 오베론";
+        merlin_string += "은 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
+      } else {
+        merlin_string += "는 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
       }
-      merlin_string += "은 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
+      
+      
       await speakWithPause(merlin_string, 'ko-KR', interval);
       await speakWithPause(down_string, 'ko-KR', 0.5);
 
