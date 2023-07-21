@@ -79,12 +79,12 @@
       <div class="col-md-12">
         <label>악팀</label><br>
         <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" id="has_mordred" value="모드레드" checked>
-          <label class="form-check-label" for="has_mordred">모드레드</label>
-        </div>
-        <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" id="has_assasin" value="암살자" checked>
           <label class="form-check-label" for="has_assasin">암살자</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="has_mordred" value="모드레드">
+          <label class="form-check-label" for="has_mordred">모드레드</label>
         </div>
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" id="has_morgana" value="모르가나">
@@ -97,6 +97,14 @@
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" id="has_trickster" value="사기꾼">
           <label class="form-check-label" for="has_trickster">사기꾼</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="has_lunatic" value="광인">
+          <label class="form-check-label" for="has_lunatic">광인</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="has_brute" value="폭력배">
+          <label class="form-check-label" for="has_brute">폭력배</label>
         </div>
       </div>
     </div>
@@ -184,6 +192,12 @@
       if (document.getElementById('has_trickster').checked) {
         num_special_evils += 1;
       }
+      if (document.getElementById('has_lunatic').checked) {
+        num_special_evils += 1;
+      }
+      if (document.getElementById('has_brute').checked) {
+        num_special_evils += 1;
+      }
       return num_special_evils;
     }
 
@@ -211,20 +225,20 @@
           var synthesis = window.speechSynthesis;
           utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = lang;
-          
           if (isNarrating) {
             document.getElementById('composedString').value = text;
-          }
-          if (!muted && isNarrating) {
-            synthesis.speak(utterance);
-            utterance.onend = function() {
+            if (!muted) {
+              synthesis.speak(utterance);
+              utterance.onend = function() {
+                setTimeout(resolve, pauseInSeconds * 1000);
+              };
+            } else {
               setTimeout(resolve, pauseInSeconds * 1000);
-            };
+            }
           } else {
             resolve();
           }
         } else {
-
           resolve();
           // reject('Speech synthesis is not supported in your browser.');
         }
@@ -257,12 +271,15 @@
       var has_untrustworthy = document.getElementById('has_untrustworthy').checked;
       var has_cleric = document.getElementById('has_cleric').checked;
       var has_troublemaker = document.getElementById('has_troublemaker').checked;
+      
 
       var has_mordred = document.getElementById('has_mordred').checked;
       var has_assasin = document.getElementById('has_assasin').checked;
       var has_morgana = document.getElementById('has_morgana').checked;
       var has_oberon = document.getElementById('has_oberon').checked;
       var has_trickster = document.getElementById('has_trickster').checked;
+      var has_lunatic = document.getElementById('has_lunatic').checked;
+      var has_brute = document.getElementById('has_brute').checked;
 
       var interval = document.getElementById('interval').value;
       var down_interval = 1;
@@ -297,11 +314,6 @@
         return;
       }
 
-      if (!has_mordred) {
-        speakError("모드레드가 없습니다");
-        return;
-      }
-
       if (!has_assasin) {
         speakError("암살자가 없습니다");
         return;
@@ -323,26 +335,32 @@
       await speakWithPause(down_string, 'ko-KR', down_interval);
       
       var merlin_string = "멀린은 고개를 들어주세요. 암살자";
+      var prop = "는";
       if (has_morgana) {
         merlin_string += ", 모르가나";
+        prop = "는";
       }
       if (has_untrustworthy) {
         merlin_string += ", 믿을 수 없는 부하";
+        prop = "는";
       }
       if (has_trickster) {
         merlin_string += ", 사기꾼";
+        prop = "은";
+      }
+      if (has_brute) {
+        merlin_string += ", 폭력배";
+        prop = "는";
+      }
+      if (has_lunatic) {
+        merlin_string += ", 광인";
+        prop = "은";
       }
       if (has_oberon) {
         merlin_string += ", 오베론";
-        merlin_string += "은 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
-      } else {
-        if (has_trickster) {
-          merlin_string += "은 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
-        }
-        else {
-          merlin_string += "는 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
-        }
+        prop = "은";
       }
+      merlin_string += prop + " 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
       
       
       await speakWithPause(merlin_string, 'ko-KR', interval);
