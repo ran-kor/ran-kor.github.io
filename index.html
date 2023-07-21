@@ -146,6 +146,26 @@
       return num_special_good;
     }
 
+    function getNumSpecialEvils() {
+      var num_special_evils = 0;
+      if (document.getElementById('has_mordred').checked) {
+        num_special_evils += 1;
+      }
+      if (document.getElementById('has_assasin').checked) {
+        num_special_evils += 1;
+      }
+      if (document.getElementById('has_morgana').checked) {
+        num_special_evils += 1;
+      }
+      if (document.getElementById('has_oberon').checked) {
+        num_special_evils += 1;
+      }
+      if (document.getElementById('has_trickster').checked) {
+        num_special_evils += 1;
+      }
+      return num_special_evils;
+    }
+
     function updateNumLS() {
       var num_special_good = getNumSpecials();
       var num_good = parseInt(document.getElementById('num_good').value);
@@ -158,12 +178,14 @@
       }
     }
 
+    let utterances = [];
+
     function speakWithPause(text, lang, pauseInSeconds) {
       return new Promise(function(resolve, reject) {
         document.getElementById('composedString').value = text;
         if ('speechSynthesis' in window) {
           var synthesis = window.speechSynthesis;
-          var utterance = new SpeechSynthesisUtterance(text);
+          utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = lang;
           
           synthesis.speak(utterance);
@@ -208,6 +230,7 @@
       if (num_players != (num_good + num_evil)) {
         var msg = "플레이어 수 (" + num_players + ") 는 멀린팀 수 (" + num_good + ") 와 모드레드팀 수 (" + num_evil + ") 의 합과 같아야 합니다.";
         speakError(msg);
+        return;
       }
 
       var num_special_good = getNumSpecials();
@@ -215,6 +238,15 @@
         speakError("특수역할이 너무 많아요!");
         return;
       }
+
+      var num_special_evils = getNumSpecialEvils();
+      if (num_evil != num_special_evils) {
+        speakError("특수역할이 없는 악이 있어요!");
+        return;
+      }
+      
+
+
       var down_string = "고개를 숙여주세요";
       await speakWithPause(down_string, 'ko-KR', interval);
 
@@ -312,6 +344,7 @@
       utterances.forEach(function(utterance) {
         synthesis.cancel(); // Stop all scheduled utterances
       });
+      document.getElementById('composedString').value = "정지";
     });
   </script>
 </body>
