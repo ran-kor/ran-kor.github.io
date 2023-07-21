@@ -9,7 +9,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>아발론 나레이터</h1>
+    <h1>아발론 나레이터 by 랄프@또보게</h1>
     
     <div class="row">
       
@@ -201,26 +201,27 @@
 
     let utterances = [];
     let isNarrating = false;
+    let stopRequested = false;
 
     function speakWithPause(text, lang, pauseInSeconds) {
       return new Promise(function(resolve, reject) {
-        if (!isNarrating) {
-          resolve();
-        }
-        document.getElementById('composedString').value = text;
+        
         var muted = document.getElementById('mute').checked;
         if ('speechSynthesis' in window) {
           var synthesis = window.speechSynthesis;
           utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = lang;
           
-          if (!muted) {
+          if (isNarrating) {
+            document.getElementById('composedString').value = text;
+          }
+          if (!muted && isNarrating) {
             synthesis.speak(utterance);
             utterance.onend = function() {
               setTimeout(resolve, pauseInSeconds * 1000);
             };
           } else {
-            setTimeout(resolve, pauseInSeconds * 1000);
+            resolve();
           }
         } else {
 
@@ -264,6 +265,7 @@
       var has_trickster = document.getElementById('has_trickster').checked;
 
       var interval = document.getElementById('interval').value;
+      var down_interval = 1;
 
       if (num_players != (num_good + num_evil)) {
         var msg = "플레이어 수 (" + num_players + ") 는 멀린팀 수 (" + num_good + ") 와 모드레드팀 수 (" + num_evil + ") 의 합과 같아야 합니다.";
@@ -318,7 +320,7 @@
       }
       evil_string += " 고개를 든 사람이 " + num_to_check_evil + "명이 아니면 에러플입니다."
       await speakWithPause(evil_string, 'ko-KR', interval);
-      await speakWithPause(down_string, 'ko-KR', 0.5);
+      await speakWithPause(down_string, 'ko-KR', down_interval);
       
       var merlin_string = "멀린은 고개를 들어주세요. 암살자";
       if (has_morgana) {
@@ -327,28 +329,36 @@
       if (has_untrustworthy) {
         merlin_string += ", 믿을 수 없는 부하";
       }
+      if (has_trickster) {
+        merlin_string += ", 사기꾼";
+      }
       if (has_oberon) {
         merlin_string += ", 오베론";
         merlin_string += "은 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
       } else {
-        merlin_string += "는 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
+        if (has_trickster) {
+          merlin_string += "은 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
+        }
+        else {
+          merlin_string += "는 엄지손가락을 들어 멀린에게 본인의 존재를 알려주세요.";
+        }
       }
       
       
       await speakWithPause(merlin_string, 'ko-KR', interval);
-      await speakWithPause(down_string, 'ko-KR', 0.5);
+      await speakWithPause(down_string, 'ko-KR', down_interval);
 
       if (has_percival) {
         var percival_string = "퍼시벌은 고개를 들어주세요. 멀린과 모르가나";
         percival_string += "는 엄지손가락을 들어 퍼시벌에게 본인의 존재를 알려주세요.";
         await speakWithPause(percival_string, 'ko-KR', interval);
-        await speakWithPause(down_string, 'ko-KR', 0.5);
+        await speakWithPause(down_string, 'ko-KR', down_interval);
       }
 
       if (has_untrustworthy) {
         var untrustworthy_string = "믿을 수 없는 부하는 고개를 들어주세요. 암살자는 엄지손가락을 들어 믿을 수 없는 부하에게 본인의 존재를 알려주세요.";
         await speakWithPause(untrustworthy_string, 'ko-KR', interval);
-        await speakWithPause(down_string, 'ko-KR', 0.5);
+        await speakWithPause(down_string, 'ko-KR', down_interval);
       }
 
       if (has_cleric) {
@@ -360,13 +370,17 @@
           cleric_string += " 말썽꾼은 선이지만 엄지손가락을 반드시 들어야 합니다."
         }
         await speakWithPause(cleric_string, 'ko-KR', interval);
-        await speakWithPause(down_string, 'ko-KR', 0.5);
+        await speakWithPause(down_string, 'ko-KR', down_interval);
       }
 
       var begin_string = "이제 셋을 세면 모두 고개를 들고 게임을 시작합니다.";
-      await speakWithPause(begin_string, 'ko-KR', 3);
+      await speakWithPause(begin_string, 'ko-KR', 2);
       await speakWithPause("셋", 'ko-KR', 0.5);
 
+      if(isNarrating == false) {
+        document.getElementById('composedString').value = "정지됨";
+      }
+      stopRequested = false;
       return;
 
 
@@ -378,7 +392,7 @@
       checkbox.addEventListener('change', updateNumLS);
     });
     document.getElementById('composeBtn').addEventListener('click', async function() {
-    if (!isNarrating) {
+    if (!isNarrating && !stopRequested) {
       isNarrating = true; // Set narration state to true before starting narration
       await speakSentences();
       isNarrating = false; // Set narration state back to false after narration is done
@@ -390,7 +404,9 @@
         synthesis.cancel(); // Stop all scheduled utterances
       });
       isNarrating = false;
-      document.getElementById('composedString').value = "정지";
+      stopRequested = true;
+      document.getElementById('composedString').value = "정지 요청됨";
+      
     });
   </script>
 </body>
